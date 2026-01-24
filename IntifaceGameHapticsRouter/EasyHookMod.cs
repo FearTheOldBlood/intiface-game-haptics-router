@@ -1,13 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels.Ipc;
-using System.Text;
 using EasyHook;
 using GHRXInputModInterface;
 using NLog;
-using SharpMonoInjector;
 
 namespace IntifaceGameHapticsRouter
 {
@@ -17,54 +13,6 @@ namespace IntifaceGameHapticsRouter
         private IpcServerChannel _hookServer;
         private string _channelName;
         protected Logger _log;
-
-        /// <summary>
-        /// Denotes whether we can use XInput mods with this process.
-        /// </summary>
-        /// <param name="handle"></param>
-        /// <returns></returns>
-        /// <remarks>This is basically a copy of SharpMonoInjector.ProcessUtils.GetMonoModule, just shuffled a bit for checking for xinput.</remarks>
-        public abstract bool CanUseMod(IntPtr handle);
-
-        protected bool CanUseMod(IntPtr handle, string requiredLibrary)
-        {
-            var size = ProcessUtils.Is64BitProcess(handle) ? 8 : 4;
-
-            var ptrs = new IntPtr[0];
-
-            if (!Native.EnumProcessModulesEx(
-                handle, ptrs, 0, out int bytesNeeded, ModuleFilter.LIST_MODULES_ALL))
-            {
-                throw new InjectorException("Failed to enumerate process modules", new Win32Exception(Marshal.GetLastWin32Error()));
-            }
-
-            var count = bytesNeeded / size;
-            ptrs = new IntPtr[count];
-
-            if (!Native.EnumProcessModulesEx(
-                handle, ptrs, bytesNeeded, out bytesNeeded, ModuleFilter.LIST_MODULES_ALL))
-            {
-                throw new InjectorException("Failed to enumerate process modules", new Win32Exception(Marshal.GetLastWin32Error()));
-            }
-
-            for (var i = 0; i < count; i++)
-            {
-                StringBuilder path = new StringBuilder(260);
-                try
-                {
-                    Native.GetModuleFileNameEx(handle, ptrs[i], path, 260);
-                }
-                catch { continue; }
-                //Debug.WriteLine(path.ToString());
-
-                if (path.ToString().IndexOf(requiredLibrary, StringComparison.OrdinalIgnoreCase) > -1)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
         public EasyHookMod()
         {

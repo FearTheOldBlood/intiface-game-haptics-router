@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using EasyHook;
 using NLog;
-using SharpMonoInjector;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
@@ -58,20 +57,11 @@ namespace IntifaceGameHapticsRouter
             public string FileName;
             public int Id;
             public string Owner;
-            public bool isUWP;
-            public IntPtr MonoModule = IntPtr.Zero;
-//            public UnityVRMod.NetFramework FrameworkVersion = UnityVRMod.NetFramework.UNKNOWN;
-
-            public bool CanUseXInput => !string.IsNullOrEmpty(Owner) && !isUWP;
-
-            public bool CanUseUWP => !string.IsNullOrEmpty(Owner) && isUWP;
-
-            public bool CanUseMono => MonoModule != IntPtr.Zero;
 
             public override string ToString()
             {
                 var f = System.IO.Path.GetFileNameWithoutExtension(FileName);
-                return $"{f} ({Id}) ({(CanUseXInput ? "XInput" : "")}{(CanUseUWP ? "UWP" : "")})";
+                return $"{f} ({Id})";
             }
 
             public bool IsLive => Process.GetProcessById(Id) != null;
@@ -143,15 +133,14 @@ namespace IntifaceGameHapticsRouter
             Dispatcher.Invoke(() => { _processList.Clear(); });
             Dispatcher.Invoke(() => { ProcessStatus = "Scanning Processes..."; });
             var cp = Process.GetCurrentProcess().Id;
-            const ProcessAccessRights flags = ProcessAccessRights.PROCESS_QUERY_INFORMATION | ProcessAccessRights.PROCESS_VM_READ;
             var procList = from proc in Process.GetProcesses() orderby proc.ProcessName select proc;
+
             Parallel.ForEach(procList, (currentProc) =>
             {
                 if (_scanningToken.IsCancellationRequested)
                 {
                     return;
                 }
-                var handle = IntPtr.Zero;
 
                 try
                 {
@@ -161,40 +150,18 @@ namespace IntifaceGameHapticsRouter
                         return;
                     }
 
-                    // This is usually what throws, so do it before we invoke via dispatcher.
+                    // Only check process identity - no module scanning
                     var owner = RemoteHooking.GetProcessIdentity(currentProc.Id).Name;
 
-                    if ((handle = Native.OpenProcess(flags, false, currentProc.Id)) == IntPtr.Zero)
+                    if (!string.IsNullOrEmpty(owner))
                     {
-                        return;
-                    }
+                        var procInfo = new ProcessInfo
+                        {
+                            FileName = currentProc.ProcessName,
+                            Id = currentProc.Id,
+                            Owner = owner,
+                        };
 
-                    var procInfo = new ProcessInfo
-                    {
-                        FileName = currentProc.ProcessName,
-                        Id = currentProc.Id,
-                    };
-                    
-                    if (new XInputMod().CanUseMod(handle) || procInfo.FileName == "steam")
-                    {
-                        procInfo.Owner = owner;
-                    }
-
-                    if (new UWPInputMod().CanUseMod(handle))
-                    {
-                        procInfo.Owner = owner;
-                        procInfo.isUWP = true;
-                    }
-                    /*
-                    if (UnityVRMod.CanUseMod(handle, currentProc.MainModule.FileName, out var module, out var frameworkVersion))
-                    {
-                        procInfo.MonoModule = module;
-                        procInfo.FrameworkVersion = frameworkVersion;
-                    }
-                    */
-
-                    if (procInfo.CanUseXInput || procInfo.CanUseUWP || procInfo.CanUseMono)
-                    {
                         Dispatcher.Invoke(() =>
                         {
                             _log.Debug(procInfo);
@@ -214,15 +181,8 @@ namespace IntifaceGameHapticsRouter
                 {
                     _log.Error(aEx);
                 }
-                finally
-                {
-                    // Only close the 
-                    if (handle != IntPtr.Zero)
-                    {
-                        Native.CloseHandle(handle);
-                    }
-                }
             });
+
             if (!_attached)
             {
                 Dispatcher.Invoke(() => { ProcessStatus = "Select Process to Inject"; });
@@ -261,44 +221,47 @@ namespace IntifaceGameHapticsRouter
                 ProcessListBox.IsEnabled = false;
 
                 var attached = false;
+
+                // Try XInput first (most common), then fall back to UWP
                 try
                 {
-                    /*
-                    if (process.CanUseMono)
-                    {
-                        _unityMod = new UnityVRMod();
-                        _unityMod.MessageReceivedHandler += OnMessageReceived;
-                        _unityMod.Inject(process.Id, process.FrameworkVersion, process.MonoModule);
-                        attached = true;
-                    }
-                    */
+                    _easyHookMod = new XInputMod();
+                    _easyHookMod.Attach(process.Id);
+                    _easyHookMod.MessageReceivedHandler += OnMessageReceived;
+                    attached = true;
+                }
+                catch (Exception ex)
+                {
+                    _log.Warn($"XInput injection failed for {process.FileName}: {ex.Message}");
+                    _easyHookMod = null;
 
-                    if (process.CanUseUWP)
+                    // Fall back to UWP
+                    try
                     {
                         _easyHookMod = new UWPInputMod();
                         _easyHookMod.Attach(process.Id);
                         _easyHookMod.MessageReceivedHandler += OnMessageReceived;
                         attached = true;
                     }
-
-                    if (process.CanUseXInput && _easyHookMod == null)
+                    catch (Exception uwpEx)
                     {
-                        _easyHookMod = new XInputMod();
-                        _easyHookMod.Attach(process.Id);
-                        _easyHookMod.MessageReceivedHandler += OnMessageReceived;
-                        attached = true;
+                        _log.Warn($"UWP injection also failed for {process.FileName}: {uwpEx.Message}");
+                        _easyHookMod = null;
                     }
+                }
 
-                    if (attached)
-                    {
-                        Attached = true;
-                        ProcessAttached?.Invoke(this, null);
-                        ProcessStatus = $"Attached to {process.FileName} ({process.Id})";
-                    }
-                } 
-                catch
+                if (attached)
                 {
-                    Attached = false;
+                    Attached = true;
+                    ProcessAttached?.Invoke(this, null);
+                    ProcessStatus = $"Attached to {process.FileName} ({process.Id})";
+                }
+                else
+                {
+                    ProcessStatus = $"Failed to attach - process may not support haptics";
+                    AttachButton.IsEnabled = true;
+                    RefreshButton.IsEnabled = true;
+                    ProcessListBox.IsEnabled = true;
                 }
             }
             else

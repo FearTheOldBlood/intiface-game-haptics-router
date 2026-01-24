@@ -5,13 +5,7 @@ namespace IntifaceGameHapticsRouter
 {
     class XInputMod : EasyHookMod
     {
-
         private Vibration _lastVibration = new Vibration();
-
-        public override bool CanUseMod(IntPtr handle)
-        {
-            return CanUseMod(handle, "xinput");
-        }
 
         public override void Attach(int aProcessId)
         {

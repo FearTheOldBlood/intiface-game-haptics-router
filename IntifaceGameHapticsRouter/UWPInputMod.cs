@@ -7,17 +7,6 @@ namespace IntifaceGameHapticsRouter
     {
         private Vibration _lastVibration = new Vibration();
 
-        /// <summary>
-        /// Denotes whether we can use XInput mods with this process.
-        /// </summary>
-        /// <param name="handle"></param>
-        /// <returns></returns>
-        /// <remarks>This is basically a copy of SharpMonoInjector.ProcessUtils.GetMonoModule, just shuffled a bit for checking for xinput.</remarks>
-        public override bool CanUseMod(IntPtr handle)
-        {
-            return CanUseMod(handle, "Windows.Gaming.Input");
-        }
-
         public UWPInputMod()
         {
             GHRXInputModInterface.GHRXInputModInterface.VibrationCommandReceived += OnVibrationCommand;
