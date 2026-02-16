@@ -92,6 +92,33 @@ namespace IntifaceGameHapticsRouter
             set { StatusLabel.Content = value; }
         }
 
+        private static readonly string[] _systemOwners = { "SYSTEM", "LOCAL SERVICE", "NETWORK SERVICE" };
+        private static readonly string _windowsDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+        private static bool IsSystemProcess(Process proc, string owner)
+        {
+            if (_systemOwners.Any(s => owner.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            try
+            {
+                var fileName = proc.MainModule?.FileName;
+                if (!string.IsNullOrEmpty(fileName) &&
+                    fileName.StartsWith(_windowsDir, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // Cannot access MainModule for protected/elevated processes
+            }
+
+            return false;
+        }
+
         private ProcessInfoList _processList = new ProcessInfoList();
 
         public event EventHandler<EventArgs> ProcessAttached;
@@ -153,7 +180,7 @@ namespace IntifaceGameHapticsRouter
                     // Only check process identity - no module scanning
                     var owner = RemoteHooking.GetProcessIdentity(currentProc.Id).Name;
 
-                    if (!string.IsNullOrEmpty(owner))
+                    if (!string.IsNullOrEmpty(owner) && !IsSystemProcess(currentProc, owner))
                     {
                         var procInfo = new ProcessInfo
                         {
