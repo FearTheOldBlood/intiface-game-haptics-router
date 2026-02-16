@@ -26,9 +26,6 @@ namespace IntifaceGameHapticsRouter
         public Log Log;
         public Ping Ping;
         public XInputHaptics XInputHaptics;
-        public UnityXRViveHaptics UnityXRViveHaptics;
-        public UnityXROculusClipHaptics UnityXROculusClipHaptics;
-        public UnityXROculusInputHaptics UnityXROculusInputHaptics;
     }
 
     [Serializable]
@@ -78,59 +75,4 @@ namespace IntifaceGameHapticsRouter
         }
     }
 
-    [Serializable]
-    public class UnityXRViveHaptics
-    {
-        public HandSpec Hand;
-        public uint Duration;
-
-        public UnityXRViveHaptics()
-        {
-
-        }
-
-        public UnityXRViveHaptics(HandSpec aHand, uint aDuration)
-        {
-            Hand = aHand;
-            Duration = aDuration;
-        }
-    }
-
-    [Serializable]
-    public class UnityXROculusInputHaptics
-    {
-        public HandSpec Hand;
-        public float Frequency;
-        public float Amplitude;
-
-        public UnityXROculusInputHaptics()
-        {
-
-        }
-
-        public UnityXROculusInputHaptics(HandSpec aHand, float aFrequency, float aAmplitude)
-        {
-            Hand = aHand;
-            Frequency = aFrequency;
-            Amplitude = aAmplitude;
-        }
-    }
-
-    [Serializable]
-    public class UnityXROculusClipHaptics
-    {
-        public HandSpec Hand;
-        public byte[] ClipBuffer;
-
-        public UnityXROculusClipHaptics()
-        {
-
-        }
-
-        public UnityXROculusClipHaptics(HandSpec aHand, byte[] aClipBuffer)
-        {
-            Hand = aHand;
-            ClipBuffer = aClipBuffer;
-        }
-    }
 }
