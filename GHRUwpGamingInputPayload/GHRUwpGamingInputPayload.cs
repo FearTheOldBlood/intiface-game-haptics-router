@@ -11,7 +11,6 @@ namespace GHRUwpGamingInputPayload
     {
         private readonly GHRXInputModInterface.GHRXInputModInterface _interface;
         private readonly Queue<Vibration> _messageQueue = new Queue<Vibration>();
-        private static Exception _ex;
         private Dictionary<int, Vibration> _lastMessages = new Dictionary<int, Vibration>();
 
         public GHRUwpGamingInputPayload(
@@ -54,11 +53,6 @@ namespace GHRUwpGamingInputPayload
                             _interface.Report(RemoteHooking.GetCurrentProcessId(), _messageQueue);
                             _messageQueue.Clear();
                         }
-                    }
-                    if (_ex != null)
-                    {
-                        _interface.ReportError(RemoteHooking.GetCurrentProcessId(), _ex);
-                        break;
                     }
                 }
             }

@@ -131,7 +131,6 @@ namespace IntifaceGameHapticsRouter
         private bool _attached = false;
         private readonly Logger _log;
         private Task _enumProcessTask;
-//        private UnityVRMod _unityMod;
         private EasyHookMod _easyHookMod;
         private CancellationTokenSource _scanningTokenSource = null;
         private CancellationToken _scanningToken;

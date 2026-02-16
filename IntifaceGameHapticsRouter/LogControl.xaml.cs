@@ -152,7 +152,7 @@ namespace IntifaceGameHapticsRouter
                 {
                     Clipboard.SetText(builder.ToString());
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // We've seen weird instances of can't open clipboard
                     // but it's pretty rare.

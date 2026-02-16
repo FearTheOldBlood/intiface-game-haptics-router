@@ -39,7 +39,6 @@ namespace IntifaceGameHapticsRouter
         private ButtplugClient _client;
         private List<ButtplugClientDevice> _devices = new List<ButtplugClientDevice>();
         private Task _connectTask;
-        private bool _quitting;
         private Dictionary<uint, uint> DeviceControllerMapping = new Dictionary<uint, uint>();
 
         public EventHandler ConnectedHandler;
@@ -98,9 +97,9 @@ namespace IntifaceGameHapticsRouter
 
                 _client = client;
 
-                await Dispatcher.Invoke(async () =>
+                Dispatcher.Invoke(() =>
                 {
-                    ConnectedHandler?.Invoke(this, new EventArgs()); 
+                    ConnectedHandler?.Invoke(this, new EventArgs());
                     _connectStatus.Text = $"Connected{(aAddress == null ? ", restart GHR to disconnect." : " to Remote Buttplug Server")}";
                     OnScanningClick(null, null);
                     _scanningButton.IsEnabled = true;
@@ -113,7 +112,7 @@ namespace IntifaceGameHapticsRouter
             }
             catch (ButtplugClientConnectorException ex)
             {
-                Debug.WriteLine("Connection failed.");
+                Debug.WriteLine($"Connection failed: {ex}");
                 // If the exception was thrown after connect, make sure we disconnect.
                 if (_client != null && _client.Connected)
                 {
@@ -122,7 +121,7 @@ namespace IntifaceGameHapticsRouter
                 }
                 Dispatcher.Invoke(() =>
                 {
-                    _connectStatus.Text = $"Connection failed, please try again.";
+                    _connectStatus.Text = $"Connection failed, please try again: {ex}";
                 });
             }
             catch (Exception ex)
@@ -191,7 +190,7 @@ namespace IntifaceGameHapticsRouter
                     _scanningButton.Content = "Start Scanning";
                     Task.Run(async () => await StopScanning());
                 }
-                catch (ButtplugException e)
+                catch (ButtplugException)
                 {
                     // This will happen if scanning has already stopped. For now, ignore it.
                 }
@@ -226,7 +225,7 @@ namespace IntifaceGameHapticsRouter
                     DevicesList.Add(new CheckedListItem(aArgs.Device));
                     DeviceControllerMapping.Add(aArgs.Device.Index, 0x0F);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // Ignore already added devices
                 }
