@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -82,6 +83,7 @@ namespace IntifaceGameHapticsRouter
             {
                 _attached = value;
                 ProcessListBox.IsEnabled = !value;
+                SearchBox.IsEnabled = !value;
                 RefreshButton.IsEnabled = !value;
                 AttachButton.IsEnabled = true;
                 AttachButton.Content = value ? "Detach From Process" : "Attach To Process";
@@ -121,6 +123,7 @@ namespace IntifaceGameHapticsRouter
         }
 
         private ProcessInfoList _processList = new ProcessInfoList();
+        private List<ProcessInfo> _allProcesses = new List<ProcessInfo>();
 
         public event EventHandler<EventArgs> ProcessAttached;
         public event EventHandler<EventArgs> ProcessDetached;
@@ -133,12 +136,15 @@ namespace IntifaceGameHapticsRouter
         private CancellationTokenSource _scanningTokenSource = null;
         private CancellationToken _scanningToken;
 
+        private const string SearchPlaceholder = "Click to search...";
+
         public ModControl()
         {
             InitializeComponent();
             _log = LogManager.GetCurrentClassLogger();
             ProcessListBox.ItemsSource = _processList;
             ProcessListBox.SelectionChanged += OnSelectionChanged;
+            SearchBox.Text = SearchPlaceholder;
 
             RunEnumProcessUpdate();
         }
@@ -206,13 +212,12 @@ namespace IntifaceGameHapticsRouter
                 }
             });
 
+            var sorted = results.OrderBy(p => p.FileName, StringComparer.OrdinalIgnoreCase).ToList();
+
             Dispatcher.Invoke(() =>
             {
-                foreach (var procInfo in results.OrderBy(p => p.FileName, StringComparer.OrdinalIgnoreCase))
-                {
-                    _log.Debug(procInfo);
-                    _processList.Add(procInfo);
-                }
+                _allProcesses = sorted;
+                FilterProcessList();
             });
 
             if (!_attached)
@@ -221,6 +226,60 @@ namespace IntifaceGameHapticsRouter
             }
             _scanningTokenSource = null;
             _enumProcessTask = null;
+        }
+
+        private static bool FuzzyMatch(string text, string query)
+        {
+            int qi = 0;
+            for (int ti = 0; ti < text.Length && qi < query.Length; ti++)
+            {
+                if (char.ToLowerInvariant(text[ti]) == char.ToLowerInvariant(query[qi]))
+                {
+                    qi++;
+                }
+            }
+            return qi == query.Length;
+        }
+
+        private void FilterProcessList()
+        {
+            var raw = SearchBox.Text.Trim();
+            var query = (raw == SearchPlaceholder) ? "" : raw;
+            _processList.Clear();
+
+            foreach (var proc in _allProcesses)
+            {
+                if (string.IsNullOrEmpty(query) || FuzzyMatch(proc.FileName, query))
+                {
+                    _processList.Add(proc);
+                }
+            }
+        }
+
+        private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (SearchBox.Foreground != System.Windows.Media.Brushes.Gray)
+            {
+                FilterProcessList();
+            }
+        }
+
+        private void SearchBox_GotFocus(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (SearchBox.Text == SearchPlaceholder)
+            {
+                SearchBox.Text = "";
+                SearchBox.Foreground = System.Windows.Media.Brushes.Black;
+            }
+        }
+
+        private void SearchBox_LostFocus(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                SearchBox.Text = SearchPlaceholder;
+                SearchBox.Foreground = System.Windows.Media.Brushes.Gray;
+            }
         }
 
         private void OnSelectionChanged(object aObj, EventArgs aEvent)
