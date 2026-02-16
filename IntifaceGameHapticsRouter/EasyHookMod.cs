@@ -10,6 +10,7 @@ namespace IntifaceGameHapticsRouter
     abstract class EasyHookMod
     {
         public EventHandler<GHRProtocolMessageContainer> MessageReceivedHandler;
+        public EventHandler PayloadDisconnected;
         private IpcServerChannel _hookServer;
         private string _channelName;
         protected Logger _log;
@@ -64,6 +65,7 @@ namespace IntifaceGameHapticsRouter
         {
             _log.Error($"Remote Exception: {aEx}");
             Detach();
+            PayloadDisconnected?.Invoke(this, EventArgs.Empty);
         }
 
         protected void OnVibrationLogMessage(object aObj, string aMsg)
@@ -79,6 +81,7 @@ namespace IntifaceGameHapticsRouter
         protected void OnVibrationExit(object aObj, EventArgs aIgnored)
         {
             Detach();
+            PayloadDisconnected?.Invoke(this, EventArgs.Empty);
         }
     }
 }

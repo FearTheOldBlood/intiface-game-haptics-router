@@ -83,7 +83,7 @@ namespace GHRXInputModPayload
                     _interface.Ping(RemoteHooking.GetCurrentProcessId(), $"Hooking {xinputVersion}.dll failed");
                 }
             }
-            if (_xinputSetStateHookObj == null)
+            if (_xinputSetStateHookObj.Count == 0)
             {
                 _interface.ReportError(RemoteHooking.GetCurrentProcessId(), new Exception("No viable DLL to hook, payload exiting"));
                 return;

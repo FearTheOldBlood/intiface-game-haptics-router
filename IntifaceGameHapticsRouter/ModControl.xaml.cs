@@ -319,6 +319,7 @@ namespace IntifaceGameHapticsRouter
                     _easyHookMod = new XInputMod();
                     _easyHookMod.Attach(process.Id);
                     _easyHookMod.MessageReceivedHandler += OnMessageReceived;
+                    _easyHookMod.PayloadDisconnected += OnPayloadDisconnected;
                     attached = true;
                 }
                 catch (Exception ex)
@@ -332,6 +333,7 @@ namespace IntifaceGameHapticsRouter
                         _easyHookMod = new UWPInputMod();
                         _easyHookMod.Attach(process.Id);
                         _easyHookMod.MessageReceivedHandler += OnMessageReceived;
+                        _easyHookMod.PayloadDisconnected += OnPayloadDisconnected;
                         attached = true;
                     }
                     catch (Exception uwpEx)
@@ -371,6 +373,17 @@ namespace IntifaceGameHapticsRouter
             _easyHookMod.Detach();
             _easyHookMod = null;
             Attached = false;
+        }
+
+        private void OnPayloadDisconnected(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _easyHookMod = null;
+                Attached = false;
+                ProcessDetached?.Invoke(this, EventArgs.Empty);
+                ProcessStatus = "Payload disconnected from process";
+            });
         }
     }
 }
