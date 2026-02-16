@@ -266,10 +266,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dependencies\SharpMonoInjector\src\SharpMonoInjector\SharpMonoInjector.csproj">
-      <Project>{b72b6502-e1b3-421a-b723-b294bf5f9e6b}</Project>
-      <Name>SharpMonoInjector</Name>
-    </ProjectReference>
     <ProjectReference Include="..\GHRUwpGamingInputPayload\GHRUwpGamingInputPayload.csproj">
       <Project>{5ae2a36b-ef88-47f5-a215-56202d557989}</Project>
       <Name>GHRUwpGamingInputPayload</Name>
