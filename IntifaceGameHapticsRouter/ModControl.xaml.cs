@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -160,7 +161,8 @@ namespace IntifaceGameHapticsRouter
             Dispatcher.Invoke(() => { _processList.Clear(); });
             Dispatcher.Invoke(() => { ProcessStatus = "Scanning Processes..."; });
             var cp = Process.GetCurrentProcess().Id;
-            var procList = from proc in Process.GetProcesses() orderby proc.ProcessName select proc;
+            var procList = Process.GetProcesses();
+            var results = new ConcurrentBag<ProcessInfo>();
 
             Parallel.ForEach(procList, (currentProc) =>
             {
@@ -182,17 +184,11 @@ namespace IntifaceGameHapticsRouter
 
                     if (!string.IsNullOrEmpty(owner) && !IsSystemProcess(currentProc, owner))
                     {
-                        var procInfo = new ProcessInfo
+                        results.Add(new ProcessInfo
                         {
                             FileName = currentProc.ProcessName,
                             Id = currentProc.Id,
                             Owner = owner,
-                        };
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            _log.Debug(procInfo);
-                            _processList.Add(procInfo);
                         });
                     }
                 }
@@ -207,6 +203,15 @@ namespace IntifaceGameHapticsRouter
                 catch (Exception aEx)
                 {
                     _log.Error(aEx);
+                }
+            });
+
+            Dispatcher.Invoke(() =>
+            {
+                foreach (var procInfo in results.OrderBy(p => p.FileName, StringComparer.OrdinalIgnoreCase))
+                {
+                    _log.Debug(procInfo);
+                    _processList.Add(procInfo);
                 }
             });
 
