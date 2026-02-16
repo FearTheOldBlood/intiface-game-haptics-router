@@ -59,15 +59,5 @@ namespace IntifaceGameHapticsRouter.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] help {
-            get {
-                object obj = ResourceManager.GetObject("help", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }

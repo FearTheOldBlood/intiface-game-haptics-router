@@ -68,11 +68,8 @@
                     <local:LogControl x:Name="_logTab"></local:LogControl>
                 </Grid>
             </TabItem>
-            <TabItem Header="Help" Padding="3, 0, 3, 0">
-                <local:HelpControl x:Name="_helpTab"></local:HelpControl>
-            </TabItem>
-            <TabItem Header="About" Padding="3, 0, 3, 0">
-                <local:AboutControl x:Name="_aboutTab"></local:AboutControl>
+            <TabItem Header="About/Help" Padding="3, 0, 3, 0">
+                <local:AboutControl x:Name="_aboutTab" Loaded="_aboutTab_Loaded"></local:AboutControl>
             </TabItem>
         </TabControl>
 

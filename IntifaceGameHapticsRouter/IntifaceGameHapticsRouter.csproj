@@ -168,9 +168,6 @@
       <DependentUpon>AboutControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="GHRProtocol.cs" />
-    <Compile Include="HelpControl.xaml.cs">
-      <DependentUpon>HelpControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="IntifaceGameHapticsRouterProperties.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -183,10 +180,6 @@
       <DependentUpon>VisualizerControl.xaml</DependentUpon>
     </Compile>
     <Page Include="AboutControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="HelpControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -246,9 +239,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="help.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <None Include="IntifaceGameHapticsRouterProperties.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
