@@ -26,10 +26,10 @@
                     <RowDefinition Height="auto"></RowDefinition>
                 </Grid.RowDefinitions>
                 <TextBlock x:Name="TitleText"  Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Stretch" Height="auto" Width="auto">
-                    <Run FontWeight="Bold" FontSize="19" Text="Intiface Game Haptics Router v19"/><LineBreak/>
+                    <Run FontWeight="Bold" FontSize="19" Text="Intiface Game Haptics Router v20"/><LineBreak/>
                     <Run Text="By "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://nonpolynomial.com/">Nonpolynomial</Hyperlink><LineBreak/>
                     <LineBreak/>
-                    <Run Text="Software updates at "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://intiface.com/ghr">https://intiface.com/ghr</Hyperlink><LineBreak/>
+                    <Run Text="Software documentation and updates at "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://intiface.com">https://intiface.com</Hyperlink><LineBreak/>
                     <Run Text="Source code at "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/intiface/intiface-game-haptics-router"><Run Text="https://github.com/intiface/intiface-game-haptics-router"/></Hyperlink><LineBreak/>
                     <Run Text="Forums at "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://discuss.buttplug.io/"><Run Text="https://discuss.buttplug.io"/></Hyperlink><LineBreak/>
                     <Run Text="Discord Server at "/><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://discord.buttplug.io/"><Run Text="https://discord.buttplug.io"/></Hyperlink><LineBreak/>

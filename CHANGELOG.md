@@ -1,3 +1,15 @@
+# v20 (2026-02-16)
+
+## Features
+
+- Ripped out automated process finding, added manual search box
+  - This is most likely what was causing virus warnings to be thrown for the past several years
+- Removed a bunch of unused code and warnings
+
+## Bugfixes
+
+- Bounce out of process attachment if nothing connects
+
 # v19 (2024-06-01)
 
 ## Features
