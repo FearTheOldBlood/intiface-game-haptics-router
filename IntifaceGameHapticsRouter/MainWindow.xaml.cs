@@ -146,5 +146,6 @@ namespace IntifaceGameHapticsRouter
                 Debug.WriteLine(aMsg.Log.Message);
             }
         }
+
     }
 }
