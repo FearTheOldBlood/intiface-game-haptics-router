@@ -31,10 +31,14 @@ namespace IntifaceGameHapticsRouter
         public event EventHandler<double> MultiplierChanged;
         public event EventHandler<double> BaselineChanged;
         public event EventHandler<int> PacketGapChanged;
+        public event EventHandler<int> FadeMsChanged;
         public event EventHandler<bool> PassthruChanged;
+        public event EventHandler<bool> DirectDualSenseRumbleChanged;
 
         public double Multiplier => multiplierSlider.Value;
         public double Baseline => baselineSlider.Value;
+        public int FadeMs => (int)fadeSlider.Value;
+        public bool DirectDualSenseRumble => DirectDualSenseCheckBox.IsChecked == true;
 
         public VisualizerControl()
         {
@@ -49,6 +53,10 @@ namespace IntifaceGameHapticsRouter
                 IntifaceGameHapticsRouterProperties.Default.VibrationMultiplier = Multiplier;
                 IntifaceGameHapticsRouterProperties.Default.Save();
             };
+
+            fadeSlider.Value = IntifaceGameHapticsRouterProperties.Default.VibrationFadeMs;
+            DirectDualSenseCheckBox.IsChecked = IntifaceGameHapticsRouterProperties.Default.DirectDualSenseRumble;
+
             LowPowerValues = new ChartValues<double>();
             HighPowerValues = new ChartValues<double>();
             for (var i = 0; i < 200; ++i)
@@ -152,12 +160,43 @@ namespace IntifaceGameHapticsRouter
             PacketGapChanged?.Invoke(this, IntifaceGameHapticsRouterProperties.Default.PacketTimingGapInMS);
         }
 
+        private void FadeSlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            IntifaceGameHapticsRouterProperties.Default.VibrationFadeMs = FadeMs;
+            IntifaceGameHapticsRouterProperties.Default.Save();
+            FadeMsChanged?.Invoke(this, FadeMs);
+        }
+
+        private void DirectDualSenseCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            IntifaceGameHapticsRouterProperties.Default.DirectDualSenseRumble = DirectDualSenseRumble;
+            IntifaceGameHapticsRouterProperties.Default.Save();
+            DirectDualSenseRumbleChanged?.Invoke(this, DirectDualSenseRumble);
+        }
+
+        public void SetDualSenseStatus(string text, bool connected)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                DualSenseStatus.Text = "DualSense: " + text;
+                DualSenseStatus.Foreground = connected
+                    ? System.Windows.Media.Brushes.DarkGreen
+                    : System.Windows.Media.Brushes.Gray;
+            });
+        }
+
         private void ResetSettings_Click(object sender, RoutedEventArgs e)
         {
             IntifaceGameHapticsRouterProperties.Default.Reset();
             IntifaceGameHapticsRouterProperties.Default.Save();
+            multiplierSlider.Value = IntifaceGameHapticsRouterProperties.Default.VibrationMultiplier;
+            packetGapSlider.Value = IntifaceGameHapticsRouterProperties.Default.PacketTimingGapInMS;
+            fadeSlider.Value = IntifaceGameHapticsRouterProperties.Default.VibrationFadeMs;
+            DirectDualSenseCheckBox.IsChecked = IntifaceGameHapticsRouterProperties.Default.DirectDualSenseRumble;
             MultiplierChanged?.Invoke(this, IntifaceGameHapticsRouterProperties.Default.VibrationMultiplier);
             PacketGapChanged?.Invoke(this, IntifaceGameHapticsRouterProperties.Default.PacketTimingGapInMS);
+            FadeMsChanged?.Invoke(this, IntifaceGameHapticsRouterProperties.Default.VibrationFadeMs);
+            DirectDualSenseRumbleChanged?.Invoke(this, IntifaceGameHapticsRouterProperties.Default.DirectDualSenseRumble);
         }
     }
 }
