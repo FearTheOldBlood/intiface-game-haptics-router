@@ -49,7 +49,7 @@
                         <ColumnDefinition Width="*"></ColumnDefinition>
                         <ColumnDefinition Width="auto"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Slider x:Name="fadeSlider" Foreground="Black" Grid.Column="0" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" TickPlacement="BottomRight" Minimum="0" Maximum="3000" TickFrequency="50" IsSnapToTickEnabled="False" Margin="0,2,0,1.667" ValueChanged="FadeSlider_OnValueChanged"/>
+                    <Slider x:Name="fadeSlider" Foreground="Black" Grid.Column="0" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" TickPlacement="BottomRight" Minimum="0" Maximum="3000" TickFrequency="50" IsSnapToTickEnabled="False" Margin="0,2,0,1.667" ValueChanged="FadeSlider_OnValueChanged" Thumb.DragCompleted="FadeSlider_OnDragCompleted"/>
                     <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding ElementName=fadeSlider, Path=Value, StringFormat='0'}" Height="16" Margin="15.333,0,14,0.333" Width="auto"></TextBlock>
                 </Grid>
             </GroupBox>

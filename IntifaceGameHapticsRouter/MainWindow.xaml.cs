@@ -23,10 +23,13 @@ namespace IntifaceGameHapticsRouter
         private double _baseline;
         private int _fadeMs;
         private double _currentOutput;
+        // Anchored at the most recent attack peak. Held constant across all fade ticks so the
+        // release ramp stays linear over _fadeMs regardless of intermediate target oscillations.
         private double _fadeStartLevel;
         private Task _updateTask;
         private readonly DualSenseRumble _dualSense = new DualSenseRumble();
-        private bool _directDualSenseRumbleEnabled;
+        // Read on the xinputTimer's ThreadPool thread, written on the WPF dispatcher thread.
+        private volatile bool _directDualSenseRumbleEnabled;
 
         public MainWindow()
         {
@@ -199,7 +202,14 @@ namespace IntifaceGameHapticsRouter
             var motorVal = (uint)(_currentOutput * 65535.0);
             _graphTab.UpdateVibrationValues(motorVal, motorVal);
 
-            Debug.WriteLine($"Updating XInput haptics to {_currentOutput}");
+            if (_directDualSenseRumbleEnabled && _dualSense.IsOpen)
+            {
+                var motor255 = (byte)Math.Min(255, (int)(_currentOutput * 255.0));
+                if (!_dualSense.SetRumble(motor255, motor255))
+                {
+                    _graphTab.SetDualSenseStatus("disconnected", false);
+                }
+            }
 
             // Keep ticking while we're still descending toward target.
             var stillFading = _currentOutput > target + 1e-6;
@@ -210,7 +220,7 @@ namespace IntifaceGameHapticsRouter
                 && _lastXInput.LeftMotor == 0
                 && _lastXInput.RightMotor == 0
                 && _baseline == 0
-                && _currentOutput == 0)
+                && _currentOutput <= 0.0)
             {
                 xinputTimer.Stop();
             }
@@ -226,16 +236,6 @@ namespace IntifaceGameHapticsRouter
                 _lastXInput = aMsg.XInputHaptics;
                 xinputTimer.Start();
                 _needXInputRecalc = true;
-
-                if (_directDualSenseRumbleEnabled)
-                {
-                    var strong = (byte)(aMsg.XInputHaptics.LeftMotor >> 8);
-                    var weak = (byte)(aMsg.XInputHaptics.RightMotor >> 8);
-                    if (!_dualSense.SetRumble(strong, weak) && _dualSense.IsOpen == false)
-                    {
-                        _graphTab.SetDualSenseStatus("disconnected", false);
-                    }
-                }
             }
             else if (aMsg.Log != null)
             {

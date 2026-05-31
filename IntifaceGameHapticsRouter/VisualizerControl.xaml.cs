@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Text.RegularExpressions;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace IntifaceGameHapticsRouter
@@ -163,8 +164,12 @@ namespace IntifaceGameHapticsRouter
         private void FadeSlider_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             IntifaceGameHapticsRouterProperties.Default.VibrationFadeMs = FadeMs;
-            IntifaceGameHapticsRouterProperties.Default.Save();
             FadeMsChanged?.Invoke(this, FadeMs);
+        }
+
+        private void FadeSlider_OnDragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            IntifaceGameHapticsRouterProperties.Default.Save();
         }
 
         private void DirectDualSenseCheckBox_Changed(object sender, RoutedEventArgs e)
